@@ -5,7 +5,7 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 
-RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default?alt=rss"
+RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 
 LATEST_FILE = Path("data/latest_post.txt")
 
