@@ -3,6 +3,9 @@ name: RSS Discord
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: "*/15 * * * *"
+
 jobs:
   rss:
 
