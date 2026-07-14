@@ -15,7 +15,6 @@ RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 
 LATEST_FILE = Path("data/latest_post.txt")
 
-LOGO_URL = "https://YOUR_LOGO_URL.png"
 
 
 # =========================
@@ -26,6 +25,7 @@ feed = feedparser.parse(RSS_URL)
 
 
 if not feed.entries:
+
     print("Tidak ada artikel.")
     exit()
 
@@ -37,7 +37,7 @@ latest_link = latest.link
 
 
 # =========================
-# CEK DUPLIKAT
+# CEK ARTIKEL DUPLIKAT
 # =========================
 
 if LATEST_FILE.exists():
@@ -51,15 +51,19 @@ else:
     last_sent = ""
 
 
+
 if latest_link == last_sent:
 
-    print("Artikel sudah pernah dikirim.")
+    print(
+        "Artikel sudah pernah dikirim."
+    )
+
     exit()
 
 
 
 # =========================
-# BERSIHKAN HTML
+# AMBIL DESKRIPSI
 # =========================
 
 summary_html = latest.get(
@@ -75,19 +79,23 @@ soup = BeautifulSoup(
 
 
 description = soup.get_text(
-    "\n",
+    " ",
     strip=True
 )
 
 
+
 if len(description) > 350:
 
-    description = description[:350] + "..."
+    description = (
+        description[:350]
+        + "..."
+    )
 
 
 
 # =========================
-# CARI THUMBNAIL
+# CARI GAMBAR ARTIKEL
 # =========================
 
 thumbnail = None
@@ -96,19 +104,18 @@ thumbnail = None
 img = soup.find("img")
 
 
-if img and img.get("src"):
+if img:
 
-    thumbnail = img["src"]
+    image_url = img.get("src")
 
+    if image_url:
 
-if not thumbnail:
-
-    thumbnail = LOGO_URL
+        thumbnail = image_url
 
 
 
 # =========================
-# FORMAT TIMESTAMP DISCORD
+# FORMAT TANGGAL DISCORD
 # =========================
 
 timestamp = None
@@ -128,54 +135,53 @@ if published:
 
 
 # =========================
-# DISCORD EMBED
+# BUAT DISCORD EMBED
 # =========================
 
 embed = {
 
-    "title": f"🎮 {latest.title}",
+    "title": latest.title,
 
     "url": latest.link,
 
+
     "description": (
+        "🎮 **Gamez Gemez News**\n\n"
         f"{description}\n\n"
-        "🔗 **Baca artikel lengkap "
-        "di Gamez Gemez Blog**"
+        "🔗 Klik judul untuk membaca "
+        "artikel lengkap."
     ),
 
+
     "color": 0x5865F2,
-
-
-    "author": {
-
-        "name": "Gamez Gemez News",
-
-        "icon_url": LOGO_URL
-
-    },
-
-
-    "thumbnail": {
-
-        "url": thumbnail
-
-    },
 
 
     "footer": {
 
         "text": (
-            "🎮 Gamez Gemez Official "
+            "Gamez Gemez Official "
             "• Gaming Update"
-        ),
-
-        "icon_url": LOGO_URL
+        )
 
     }
 
 }
 
 
+
+# Tambahkan thumbnail hanya jika ada
+
+if thumbnail:
+
+    embed["thumbnail"] = {
+
+        "url": thumbnail
+
+    }
+
+
+
+# Tambahkan tanggal jika ada
 
 if timestamp:
 
@@ -184,20 +190,29 @@ if timestamp:
 
 
 # =========================
-# KIRIM DISCORD
+# PAYLOAD DISCORD
 # =========================
 
 payload = {
 
-    "username": "Gamez Gemez News",
+    "username": (
+        "Gamez Gemez News"
+    ),
+
 
     "embeds": [
+
         embed
+
     ]
 
 }
 
 
+
+# =========================
+# KIRIM WEBHOOK
+# =========================
 
 webhook = os.environ[
     "DISCORD_WEBHOOK"
@@ -218,10 +233,19 @@ print(
 
 
 
+# =========================
+# SIMPAN ARTIKEL TERAKHIR
+# =========================
+
 if response.status_code == 204:
 
     print(
         "Berhasil mengirim ke Discord."
+    )
+
+
+    LATEST_FILE.parent.mkdir(
+        exist_ok=True
     )
 
 
