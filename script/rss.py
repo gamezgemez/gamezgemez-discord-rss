@@ -18,9 +18,9 @@ LATEST_FILE = Path("data/latest_post.txt")
 
 # Ganti dengan URL icon asli kamu
 
-GAMEZ_ICON = "URL_ICON_GAMEZ_GEMEZ"
+GAMEZ_ICON = "https://media.discordapp.net/attachments/1525719632210563082/1526602588219506748/style1_7.png?ex=6a579ef3&is=6a564d73&hm=073e936ddfc1685ae41f916532e51131b52ea2f43b9ebf70e96df22dc006d314&=&format=webp&quality=lossless&width=821&height=821"
 
-KIDDO_ICON = "URL_ICON_GAMEZ_GEMEZ_KIDDO"
+KIDDO_ICON = "https://media.discordapp.net/attachments/1525719632210563082/1526602512516386856/pose_change_33.png?ex=6a579ee1&is=6a564d61&hm=a5c1d9226d1b5d791a67338dc0d62cf37cbfca9527a2e188a8e4d6cf6d21193f&=&format=webp&quality=lossless&width=821&height=821"
 
 
 
