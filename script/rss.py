@@ -16,16 +16,14 @@ RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 LATEST_FILE = Path("data/latest_post.txt")
 
 
-
 # =========================
-# AMBIL ARTIKEL
+# AMBIL ARTIKEL TERBARU
 # =========================
 
 feed = feedparser.parse(RSS_URL)
 
 
 if not feed.entries:
-
     print("Tidak ada artikel.")
     exit()
 
@@ -53,10 +51,7 @@ else:
 
 if latest_link == last_sent:
 
-    print(
-        "Artikel sudah pernah dikirim."
-    )
-
+    print("Artikel sudah pernah dikirim.")
     exit()
 
 
@@ -68,7 +63,6 @@ if latest_link == last_sent:
 categories = []
 
 
-# Cara 1
 if hasattr(latest, "tags"):
 
     for tag in latest.tags:
@@ -80,31 +74,21 @@ if hasattr(latest, "tags"):
             )
 
 
+if not categories and hasattr(latest, "category"):
 
-# Cara 2 (fallback)
-if hasattr(latest, "category"):
+    categories.append(
+        latest.category
+    )
 
-    if latest.category:
-
-        categories.append(
-            latest.category
-        )
-
-
-
-# Hilangkan duplikat
 
 categories = list(
     dict.fromkeys(categories)
 )
 
 
-
 if categories:
 
-    category_text = ", ".join(
-        categories
-    )
+    category_text = ", ".join(categories)
 
 else:
 
@@ -113,15 +97,7 @@ else:
 
 
 # =========================
-# AUTHOR FIX
-# =========================
-
-author = "Gamez Gemez"
-
-
-
-# =========================
-# DETEKSI KONTEN
+# TENTUKAN IDENTITAS KONTEN
 # =========================
 
 category_check = " ".join(
@@ -130,9 +106,11 @@ category_check = " ".join(
 
 
 
-content_type = {
+# Default Gamez Gemez Gaming
 
-    "name": "🎮 Gamez Gemez Gaming",
+brand = {
+
+    "name": "🎮 GAMEZ GEMEZ",
 
     "color": 0x5865F2
 
@@ -140,24 +118,26 @@ content_type = {
 
 
 
+# Label Kiddo
+
 kiddo_keywords = [
 
-    "roblox",
     "kiddo",
     "kids",
     "family",
-    "anak"
+    "anak",
+    "roblox"
 
 ]
 
 
-for word in kiddo_keywords:
+for keyword in kiddo_keywords:
 
-    if word in category_check:
+    if keyword in category_check:
 
-        content_type = {
+        brand = {
 
-            "name": "🧸 Gamez Gemez Kiddo",
+            "name": "🧸 GAMEZ GEMEZ KIDDO",
 
             "color": 0x2ECC71
 
@@ -167,34 +147,16 @@ for word in kiddo_keywords:
 
 
 
-news_keywords = [
+# =========================
+# AUTHOR
+# =========================
 
-    "news",
-    "update",
-    "trailer",
-    "berita"
-
-]
-
-
-for word in news_keywords:
-
-    if word in category_check:
-
-        content_type = {
-
-            "name": "📰 Gamez Gemez News",
-
-            "color": 0x9B59B6
-
-        }
-
-        break
+author = "Gamez Gemez"
 
 
 
 # =========================
-# BERSIHKAN DESKRIPSI
+# DESKRIPSI ARTIKEL
 # =========================
 
 summary_html = latest.get(
@@ -213,7 +175,6 @@ description = soup.get_text(
     " ",
     strip=True
 )
-
 
 
 if len(description) > 350:
@@ -244,7 +205,7 @@ if img:
 
 
 # =========================
-# TIMESTAMP
+# TANGGAL
 # =========================
 
 timestamp = None
@@ -264,15 +225,14 @@ if published:
 
 
 # =========================
-# EMBED DISCORD
+# DISCORD EMBED
 # =========================
 
 embed = {
 
-
     "title": (
 
-        f"{content_type['name']}\n"
+        f"{brand['name']}\n"
         f"{latest.title}"
 
     ),
@@ -287,7 +247,7 @@ embed = {
 
         "━━━━━━━━━━━━━━\n\n"
 
-        f"🏷️ **Kategori**\n"
+        f"🏷️ **Label**\n"
         f"{category_text}\n\n"
 
         f"✍️ **Author**\n"
@@ -299,15 +259,15 @@ embed = {
     ),
 
 
-    "color": content_type["color"],
+    "color": brand["color"],
 
 
     "footer": {
 
         "text": (
 
-            f"{content_type['name']} "
-            "• Gamez Gemez"
+            f"{brand['name']} "
+            "• Blog Update"
 
         )
 
@@ -334,14 +294,12 @@ if timestamp:
 
 
 # =========================
-# DISCORD WEBHOOK
+# KIRIM KE DISCORD
 # =========================
 
 payload = {
 
-
-    "username": content_type["name"],
-
+    "username": brand["name"],
 
     "embeds": [
 
@@ -359,27 +317,20 @@ webhook = os.environ[
 
 
 response = requests.post(
-
     webhook,
-
     json=payload
-
 )
 
 
 
 print(
-
     "Discord Status:",
-
     response.status_code
-
 )
 
 
 
 if response.status_code == 204:
-
 
     print(
         "Berhasil mengirim ke Discord."
@@ -387,18 +338,13 @@ if response.status_code == 204:
 
 
     LATEST_FILE.parent.mkdir(
-
         exist_ok=True
-
     )
 
 
     LATEST_FILE.write_text(
-
         latest_link,
-
         encoding="utf-8"
-
     )
 
 
