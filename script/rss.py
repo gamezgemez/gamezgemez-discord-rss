@@ -18,9 +18,9 @@ LATEST_FILE = Path("data/latest_post.txt")
 
 # Ganti dengan URL icon asli kamu
 
-GAMEZ_ICON = "https://github.com/gamezgemez/gamezgemez-discord-rss/blob/main/assets/Gamez%20Gemez%20Logo.png"
+GAMEZ_ICON = "https://raw.githubusercontent.com/gamezgemez/gamezgemez-discord-rss/main/assets/Gamez%20Gemez%20Logo.png"
 
-KIDDO_ICON = "https://github.com/gamezgemez/gamezgemez-discord-rss/blob/main/assets/Gamez%20Gemez%20Kiddo%20Logo.png"
+KIDDO_ICON = "https://raw.githubusercontent.com/gamezgemez/gamezgemez-discord-rss/main/assets/Gamez%20Gemez%20Kiddo%20Logo.png"
 
 
 
