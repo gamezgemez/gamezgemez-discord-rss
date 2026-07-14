@@ -16,17 +16,16 @@ RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 LATEST_FILE = Path("data/latest_post.txt")
 
 
-# Icon kecil dalam embed
-# Tidak mengubah avatar webhook Discord
+# Ganti dengan URL icon asli kamu
 
-GAMEZ_ICON = "https://photos.google.com/u/1/photo/AF1QipNOV5N3g22luuBhWF3jXyIo5zUsNt-D3pkm_6Y3"
+GAMEZ_ICON = "URL_ICON_GAMEZ_GEMEZ"
 
-KIDDO_ICON = "https://photos.google.com/u/1/photo/AF1QipOHNECwazkHOEiWTyZ5XoD0GSzNZ7CVkobFF4CC"
+KIDDO_ICON = "URL_ICON_GAMEZ_GEMEZ_KIDDO"
 
 
 
 # =========================
-# AMBIL ARTIKEL
+# AMBIL ARTIKEL TERBARU
 # =========================
 
 feed = feedparser.parse(RSS_URL)
@@ -61,7 +60,10 @@ else:
 
 if latest_link == last_sent:
 
-    print("Artikel sudah pernah dikirim.")
+    print(
+        "Artikel sudah pernah dikirim."
+    )
+
     exit()
 
 
@@ -70,7 +72,7 @@ if latest_link == last_sent:
 # AMBIL LABEL BLOGGER
 # =========================
 
-categories = []
+labels = []
 
 
 if hasattr(latest, "tags"):
@@ -79,90 +81,109 @@ if hasattr(latest, "tags"):
 
         if hasattr(tag, "term"):
 
-            categories.append(
-                tag.term
+            labels.append(
+                tag.term.strip()
             )
 
 
-if not categories and hasattr(latest, "category"):
+# fallback
 
-    categories.append(
-        latest.category
-    )
+if hasattr(latest, "category"):
+
+    if latest.category:
+
+        labels.append(
+            latest.category
+        )
 
 
-categories = list(
-    dict.fromkeys(categories)
+labels = list(
+    dict.fromkeys(labels)
 )
 
 
-if categories:
 
-    category_text = ", ".join(categories)
-
-else:
-
-    category_text = "Gaming"
+label_text = ", ".join(labels)
 
 
 
 # =========================
-# TENTUKAN BRAND
+# DETEKSI BRAND BERDASARKAN LABEL
 # =========================
 
-category_check = " ".join(
-    categories
-).lower()
+label_check = [
+    x.lower()
+    for x in labels
+]
 
 
 
-# Default Gamez Gemez
+# Default
 
 brand = {
 
     "name": "🎮 GAMEZ GEMEZ",
 
+    "icon": GAMEZ_ICON,
+
     "color": 0x5865F2,
 
-    "icon": GAMEZ_ICON
+    "description": (
+        "🎮 Gaming Content\n"
+        "Review game, berita gaming, "
+        "guide, dan informasi terbaru."
+    )
 
 }
 
 
 
-# Deteksi Kiddo
+# Jika label Gamez Gemez Kiddo ditemukan
 
-kiddo_keywords = [
+if "gamez gemez kiddo" in label_check:
 
-    "kiddo",
-    "kids",
-    "family",
-    "anak",
-    "roblox"
+    brand = {
 
-]
+        "name": "🧸 GAMEZ GEMEZ KIDDO",
+
+        "icon": KIDDO_ICON,
+
+        "color": 0x2ECC71,
+
+        "description": (
+            "🧸 Family Friendly Content\n"
+            "Konten game aman untuk anak "
+            "dan keluarga."
+        )
+
+    }
 
 
-for keyword in kiddo_keywords:
 
-    if keyword in category_check:
+# Jika label Gamez Gemez ditemukan
 
-        brand = {
+elif "gamez gemez" in label_check:
 
-            "name": "🧸 GAMEZ GEMEZ KIDDO",
+    brand = {
 
-            "color": 0x2ECC71,
+        "name": "🎮 GAMEZ GEMEZ",
 
-            "icon": KIDDO_ICON
+        "icon": GAMEZ_ICON,
 
-        }
+        "color": 0x5865F2,
 
-        break
+        "description": (
+            "🎮 Gaming Content\n"
+            "Review game, berita gaming, "
+            "guide, dan informasi terbaru."
+        )
+
+    }
 
 
 
 # =========================
-# DESKRIPSI
+# BERSIHKAN DESKRIPSI
 # =========================
 
 summary_html = latest.get(
@@ -181,6 +202,7 @@ description = soup.get_text(
     " ",
     strip=True
 )
+
 
 
 if len(description) > 350:
@@ -250,18 +272,19 @@ embed = {
 
     "description": (
 
+        f"{brand['description']}\n\n"
+
+        "━━━━━━━━━━━━━━\n\n"
+
         f"{description}\n\n"
 
         "━━━━━━━━━━━━━━\n\n"
 
-        f"🏷️ **Label**\n"
-        f"{category_text}\n\n"
+        f"🏷️ **Label Blogger**\n"
+        f"{label_text}\n\n"
 
         "✍️ **Author**\n"
-        "Gamez Gemez\n\n"
-
-        "🔗 Klik judul untuk membaca "
-        "artikel lengkap."
+        "Gamez Gemez"
 
     ),
 
@@ -281,10 +304,7 @@ embed = {
     "footer": {
 
         "text": (
-
-            f"{brand['name']} "
-            "• Blog Update"
-
+            "Gamez Gemez Blog Update"
         ),
 
         "icon_url": brand["icon"]
