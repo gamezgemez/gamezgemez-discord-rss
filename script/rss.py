@@ -16,14 +16,24 @@ RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 LATEST_FILE = Path("data/latest_post.txt")
 
 
+# Icon kecil dalam embed
+# Tidak mengubah avatar webhook Discord
+
+GAMEZ_ICON = "https://photos.google.com/u/1/photo/AF1QipNOV5N3g22luuBhWF3jXyIo5zUsNt-D3pkm_6Y3"
+
+KIDDO_ICON = "https://photos.google.com/u/1/photo/AF1QipOHNECwazkHOEiWTyZ5XoD0GSzNZ7CVkobFF4CC"
+
+
+
 # =========================
-# AMBIL ARTIKEL TERBARU
+# AMBIL ARTIKEL
 # =========================
 
 feed = feedparser.parse(RSS_URL)
 
 
 if not feed.entries:
+
     print("Tidak ada artikel.")
     exit()
 
@@ -97,7 +107,7 @@ else:
 
 
 # =========================
-# TENTUKAN IDENTITAS KONTEN
+# TENTUKAN BRAND
 # =========================
 
 category_check = " ".join(
@@ -106,19 +116,21 @@ category_check = " ".join(
 
 
 
-# Default Gamez Gemez Gaming
+# Default Gamez Gemez
 
 brand = {
 
     "name": "🎮 GAMEZ GEMEZ",
 
-    "color": 0x5865F2
+    "color": 0x5865F2,
+
+    "icon": GAMEZ_ICON
 
 }
 
 
 
-# Label Kiddo
+# Deteksi Kiddo
 
 kiddo_keywords = [
 
@@ -139,7 +151,9 @@ for keyword in kiddo_keywords:
 
             "name": "🧸 GAMEZ GEMEZ KIDDO",
 
-            "color": 0x2ECC71
+            "color": 0x2ECC71,
+
+            "icon": KIDDO_ICON
 
         }
 
@@ -148,15 +162,7 @@ for keyword in kiddo_keywords:
 
 
 # =========================
-# AUTHOR
-# =========================
-
-author = "Gamez Gemez"
-
-
-
-# =========================
-# DESKRIPSI ARTIKEL
+# DESKRIPSI
 # =========================
 
 summary_html = latest.get(
@@ -205,7 +211,7 @@ if img:
 
 
 # =========================
-# TANGGAL
+# TIMESTAMP
 # =========================
 
 timestamp = None
@@ -230,6 +236,7 @@ if published:
 
 embed = {
 
+
     "title": (
 
         f"{brand['name']}\n"
@@ -250,8 +257,8 @@ embed = {
         f"🏷️ **Label**\n"
         f"{category_text}\n\n"
 
-        f"✍️ **Author**\n"
-        f"{author}\n\n"
+        "✍️ **Author**\n"
+        "Gamez Gemez\n\n"
 
         "🔗 Klik judul untuk membaca "
         "artikel lengkap."
@@ -262,6 +269,15 @@ embed = {
     "color": brand["color"],
 
 
+    "author": {
+
+        "name": brand["name"],
+
+        "icon_url": brand["icon"]
+
+    },
+
+
     "footer": {
 
         "text": (
@@ -269,7 +285,9 @@ embed = {
             f"{brand['name']} "
             "• Blog Update"
 
-        )
+        ),
+
+        "icon_url": brand["icon"]
 
     }
 
@@ -294,7 +312,7 @@ if timestamp:
 
 
 # =========================
-# KIRIM KE DISCORD
+# KIRIM DISCORD
 # =========================
 
 payload = {
