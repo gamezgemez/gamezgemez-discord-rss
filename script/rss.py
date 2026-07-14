@@ -18,7 +18,7 @@ LATEST_FILE = Path("data/latest_post.txt")
 
 
 # =========================
-# AMBIL ARTIKEL TERBARU
+# AMBIL ARTIKEL
 # =========================
 
 feed = feedparser.parse(RSS_URL)
@@ -51,7 +51,6 @@ else:
     last_sent = ""
 
 
-
 if latest_link == last_sent:
 
     print(
@@ -69,13 +68,35 @@ if latest_link == last_sent:
 categories = []
 
 
+# Cara 1
 if hasattr(latest, "tags"):
 
     for tag in latest.tags:
 
+        if hasattr(tag, "term"):
+
+            categories.append(
+                tag.term
+            )
+
+
+
+# Cara 2 (fallback)
+if hasattr(latest, "category"):
+
+    if latest.category:
+
         categories.append(
-            tag.term.lower()
+            latest.category
         )
+
+
+
+# Hilangkan duplikat
+
+categories = list(
+    dict.fromkeys(categories)
+)
 
 
 
@@ -92,16 +113,22 @@ else:
 
 
 # =========================
-# TENTUKAN TIPE KONTEN
+# AUTHOR FIX
+# =========================
+
+author = "Gamez Gemez"
+
+
+
+# =========================
+# DETEKSI KONTEN
 # =========================
 
 category_check = " ".join(
     categories
-)
+).lower()
 
 
-
-# Default Gamez Gemez Gaming
 
 content_type = {
 
@@ -112,8 +139,6 @@ content_type = {
 }
 
 
-
-# Kiddo
 
 kiddo_keywords = [
 
@@ -142,8 +167,6 @@ for word in kiddo_keywords:
 
 
 
-# News
-
 news_keywords = [
 
     "news",
@@ -171,18 +194,7 @@ for word in news_keywords:
 
 
 # =========================
-# AUTHOR
-# =========================
-
-author = latest.get(
-    "author",
-    "Gamez Gemez"
-)
-
-
-
-# =========================
-# BERSIHKAN HTML
+# BERSIHKAN DESKRIPSI
 # =========================
 
 summary_html = latest.get(
@@ -252,7 +264,7 @@ if published:
 
 
 # =========================
-# DISCORD EMBED
+# EMBED DISCORD
 # =========================
 
 embed = {
@@ -322,17 +334,13 @@ if timestamp:
 
 
 # =========================
-# KIRIM DISCORD
+# DISCORD WEBHOOK
 # =========================
 
 payload = {
 
 
-    "username": (
-
-        content_type["name"]
-
-    ),
+    "username": content_type["name"],
 
 
     "embeds": [
@@ -395,7 +403,6 @@ if response.status_code == 204:
 
 
 else:
-
 
     print(
         response.text
