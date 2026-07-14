@@ -51,7 +51,6 @@ else:
     last_sent = ""
 
 
-
 if latest_link == last_sent:
 
     print(
@@ -63,7 +62,44 @@ if latest_link == last_sent:
 
 
 # =========================
-# AMBIL DESKRIPSI
+# AMBIL LABEL BLOGGER
+# =========================
+
+categories = []
+
+
+if hasattr(latest, "tags"):
+
+    for tag in latest.tags:
+
+        categories.append(
+            tag.term
+        )
+
+
+if categories:
+
+    category_text = ", ".join(categories)
+
+else:
+
+    category_text = "Gaming"
+
+
+
+# =========================
+# AMBIL AUTHOR
+# =========================
+
+author = latest.get(
+    "author",
+    "Gamez Gemez"
+)
+
+
+
+# =========================
+# BERSIHKAN HTML
 # =========================
 
 summary_html = latest.get(
@@ -95,7 +131,7 @@ if len(description) > 350:
 
 
 # =========================
-# CARI GAMBAR ARTIKEL
+# CARI THUMBNAIL
 # =========================
 
 thumbnail = None
@@ -115,7 +151,7 @@ if img:
 
 
 # =========================
-# FORMAT TANGGAL DISCORD
+# FORMAT TIMESTAMP DISCORD
 # =========================
 
 timestamp = None
@@ -140,16 +176,31 @@ if published:
 
 embed = {
 
-    "title": latest.title,
+    "title": (
+        f"🎮 {latest.title}"
+    ),
+
 
     "url": latest.link,
 
 
     "description": (
+
         "🎮 **Gamez Gemez News**\n\n"
+
         f"{description}\n\n"
+
+        "━━━━━━━━━━━━━━\n\n"
+
+        f"🏷️ **Kategori**\n"
+        f"{category_text}\n\n"
+
+        f"✍️ **Author**\n"
+        f"{author}\n\n"
+
         "🔗 Klik judul untuk membaca "
         "artikel lengkap."
+
     ),
 
 
@@ -169,7 +220,7 @@ embed = {
 
 
 
-# Tambahkan thumbnail hanya jika ada
+# Tambahkan thumbnail jika tersedia
 
 if thumbnail:
 
@@ -181,7 +232,7 @@ if thumbnail:
 
 
 
-# Tambahkan tanggal jika ada
+# Tambahkan tanggal
 
 if timestamp:
 
