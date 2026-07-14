@@ -37,7 +37,7 @@ latest_link = latest.link
 
 
 # =========================
-# CEK ARTIKEL DUPLIKAT
+# CEK DUPLIKAT
 # =========================
 
 if LATEST_FILE.exists():
@@ -49,6 +49,7 @@ if LATEST_FILE.exists():
 else:
 
     last_sent = ""
+
 
 
 if latest_link == last_sent:
@@ -73,13 +74,16 @@ if hasattr(latest, "tags"):
     for tag in latest.tags:
 
         categories.append(
-            tag.term
+            tag.term.lower()
         )
+
 
 
 if categories:
 
-    category_text = ", ".join(categories)
+    category_text = ", ".join(
+        categories
+    )
 
 else:
 
@@ -88,7 +92,86 @@ else:
 
 
 # =========================
-# AMBIL AUTHOR
+# TENTUKAN TIPE KONTEN
+# =========================
+
+category_check = " ".join(
+    categories
+)
+
+
+
+# Default Gamez Gemez Gaming
+
+content_type = {
+
+    "name": "🎮 Gamez Gemez Gaming",
+
+    "color": 0x5865F2
+
+}
+
+
+
+# Kiddo
+
+kiddo_keywords = [
+
+    "roblox",
+    "kiddo",
+    "kids",
+    "family",
+    "anak"
+
+]
+
+
+for word in kiddo_keywords:
+
+    if word in category_check:
+
+        content_type = {
+
+            "name": "🧸 Gamez Gemez Kiddo",
+
+            "color": 0x2ECC71
+
+        }
+
+        break
+
+
+
+# News
+
+news_keywords = [
+
+    "news",
+    "update",
+    "trailer",
+    "berita"
+
+]
+
+
+for word in news_keywords:
+
+    if word in category_check:
+
+        content_type = {
+
+            "name": "📰 Gamez Gemez News",
+
+            "color": 0x9B59B6
+
+        }
+
+        break
+
+
+
+# =========================
+# AUTHOR
 # =========================
 
 author = latest.get(
@@ -131,7 +214,7 @@ if len(description) > 350:
 
 
 # =========================
-# CARI THUMBNAIL
+# THUMBNAIL
 # =========================
 
 thumbnail = None
@@ -142,16 +225,14 @@ img = soup.find("img")
 
 if img:
 
-    image_url = img.get("src")
-
-    if image_url:
-
-        thumbnail = image_url
+    thumbnail = img.get(
+        "src"
+    )
 
 
 
 # =========================
-# FORMAT TIMESTAMP DISCORD
+# TIMESTAMP
 # =========================
 
 timestamp = None
@@ -171,13 +252,17 @@ if published:
 
 
 # =========================
-# BUAT DISCORD EMBED
+# DISCORD EMBED
 # =========================
 
 embed = {
 
+
     "title": (
-        f"🎮 {latest.title}"
+
+        f"{content_type['name']}\n"
+        f"{latest.title}"
+
     ),
 
 
@@ -185,8 +270,6 @@ embed = {
 
 
     "description": (
-
-        "🎮 **Gamez Gemez News**\n\n"
 
         f"{description}\n\n"
 
@@ -204,14 +287,16 @@ embed = {
     ),
 
 
-    "color": 0x5865F2,
+    "color": content_type["color"],
 
 
     "footer": {
 
         "text": (
-            "Gamez Gemez Official "
-            "• Gaming Update"
+
+            f"{content_type['name']} "
+            "• Gamez Gemez"
+
         )
 
     }
@@ -219,8 +304,6 @@ embed = {
 }
 
 
-
-# Tambahkan thumbnail jika tersedia
 
 if thumbnail:
 
@@ -232,8 +315,6 @@ if thumbnail:
 
 
 
-# Tambahkan tanggal
-
 if timestamp:
 
     embed["timestamp"] = timestamp
@@ -241,13 +322,16 @@ if timestamp:
 
 
 # =========================
-# PAYLOAD DISCORD
+# KIRIM DISCORD
 # =========================
 
 payload = {
 
+
     "username": (
-        "Gamez Gemez News"
+
+        content_type["name"]
+
     ),
 
 
@@ -261,34 +345,33 @@ payload = {
 
 
 
-# =========================
-# KIRIM WEBHOOK
-# =========================
-
 webhook = os.environ[
     "DISCORD_WEBHOOK"
 ]
 
 
 response = requests.post(
+
     webhook,
+
     json=payload
+
 )
 
 
 
 print(
+
     "Discord Status:",
+
     response.status_code
+
 )
 
 
 
-# =========================
-# SIMPAN ARTIKEL TERAKHIR
-# =========================
-
 if response.status_code == 204:
+
 
     print(
         "Berhasil mengirim ke Discord."
@@ -296,17 +379,23 @@ if response.status_code == 204:
 
 
     LATEST_FILE.parent.mkdir(
+
         exist_ok=True
+
     )
 
 
     LATEST_FILE.write_text(
+
         latest_link,
+
         encoding="utf-8"
+
     )
 
 
 else:
+
 
     print(
         response.text
