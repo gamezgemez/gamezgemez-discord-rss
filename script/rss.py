@@ -14,15 +14,40 @@ latest = feed.entries[0]
 
 webhook = os.environ["DISCORD_WEBHOOK"]
 
-message = {
-    "content": f"📰 Artikel baru!\n\n**{latest.title}**\n{latest.link}"
+# Ringkasan artikel
+description = ""
+
+if "summary" in latest:
+    description = latest.summary
+
+description = description.replace("<br />", "\n")
+description = description.replace("<br/>", "\n")
+
+# Potong supaya tidak terlalu panjang
+description = description[:350]
+
+embed = {
+    "title": latest.title,
+    "description": description,
+    "url": latest.link,
+    "color": 3066993,
+    "footer": {
+        "text": "Gamez Gemez Official"
+    }
 }
 
-response = requests.post(webhook, json=message)
+payload = {
+    "username": "Gamez Gemez",
+    "embeds": [
+        embed
+    ]
+}
 
-print("Status Discord:", response.status_code)
+response = requests.post(webhook, json=payload)
+
+print("Discord Status:", response.status_code)
 
 if response.status_code == 204:
-    print("✅ Berhasil mengirim ke Discord!")
+    print("Berhasil!")
 else:
     print(response.text)
