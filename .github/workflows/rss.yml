@@ -16,4 +16,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: python script/rss.py
+      - name: Run python script
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python script/rss.py
