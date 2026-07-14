@@ -4,19 +4,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  rss:
+
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    permissions:
+      contents: write
 
-      - uses: actions/setup-python@v5
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - run: pip install -r requirements.txt
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
 
-      - name: Run python script
+      - name: Run RSS Script
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python script/rss.py
+
+      - name: Commit latest article
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add data/latest_post.txt
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Update latest article"
+            git push
+          fi
