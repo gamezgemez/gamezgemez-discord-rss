@@ -14,8 +14,11 @@ RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 
 LATEST_FILE = Path("data/latest_post.txt")
 
-# Ganti dengan URL logo Gamez Gemez kamu
-LOGO_URL = "https://photos.google.com/u/1/photo/AF1QipNOV5N3g22luuBhWF3jXyIo5zUsNt-D3pkm_6Y3"
+
+# Logo hanya untuk ikon kecil di embed
+# Tidak mengubah avatar webhook Discord
+LOGO_URL = "https://YOUR_LOGO_URL.png"
+
 
 
 # =========================
@@ -23,6 +26,7 @@ LOGO_URL = "https://photos.google.com/u/1/photo/AF1QipNOV5N3g22luuBhWF3jXyIo5zUs
 # =========================
 
 feed = feedparser.parse(RSS_URL)
+
 
 if not feed.entries:
     print("Tidak ada artikel.")
@@ -34,20 +38,28 @@ latest = feed.entries[0]
 latest_link = latest.link
 
 
+
 # =========================
 # CEK ARTIKEL DUPLIKAT
 # =========================
 
 if LATEST_FILE.exists():
+
     last_sent = LATEST_FILE.read_text(
         encoding="utf-8"
     ).strip()
+
 else:
+
     last_sent = ""
 
 
 if latest_link == last_sent:
-    print("Artikel sudah pernah dikirim.")
+
+    print(
+        "Artikel sudah pernah dikirim."
+    )
+
     exit()
 
 
@@ -61,6 +73,7 @@ summary_html = latest.get(
     ""
 )
 
+
 soup = BeautifulSoup(
     summary_html,
     "html.parser"
@@ -73,7 +86,9 @@ description = soup.get_text(
 )
 
 
+
 if len(description) > 350:
+
     description = (
         description[:350]
         + "..."
@@ -82,7 +97,7 @@ if len(description) > 350:
 
 
 # =========================
-# CARI THUMBNAIL
+# CARI THUMBNAIL ARTIKEL
 # =========================
 
 thumbnail = None
@@ -92,19 +107,21 @@ img = soup.find("img")
 
 
 if img and img.get("src"):
+
     thumbnail = img["src"]
 
 
-# Jika tidak ada gambar artikel
-# gunakan logo Gamez Gemez
+
+# Jika artikel tidak punya gambar
 
 if not thumbnail:
+
     thumbnail = LOGO_URL
 
 
 
 # =========================
-# DATA TAMBAHAN
+# DATA ARTIKEL
 # =========================
 
 published = latest.get(
@@ -123,6 +140,7 @@ embed = {
         f"🎮 {latest.title}"
     ),
 
+
     "url": latest.link,
 
 
@@ -133,7 +151,7 @@ embed = {
     ),
 
 
-    # Discord blurple
+    # Warna Discord BlurPle
     "color": 0x5865F2,
 
 
@@ -144,12 +162,14 @@ embed = {
         ),
 
         "icon_url": LOGO_URL
+
     },
 
 
     "thumbnail": {
 
         "url": thumbnail
+
     },
 
 
@@ -161,13 +181,14 @@ embed = {
         ),
 
         "icon_url": LOGO_URL
+
     }
 
 }
 
 
 
-# Tambahkan tanggal jika tersedia
+# Tambahkan tanggal artikel
 
 if published:
 
@@ -176,8 +197,11 @@ if published:
 
 
 # =========================
-# KIRIM KE DISCORD
+# PAYLOAD DISCORD
 # =========================
+
+# Tidak menggunakan avatar_url
+# Logo webhook tetap memakai setting Discord
 
 payload = {
 
@@ -186,16 +210,19 @@ payload = {
     ),
 
 
-    "avatar_url": LOGO_URL,
-
-
     "embeds": [
+
         embed
+
     ]
 
 }
 
 
+
+# =========================
+# KIRIM WEBHOOK
+# =========================
 
 webhook = os.environ[
     "DISCORD_WEBHOOK"
@@ -217,7 +244,7 @@ print(
 
 
 # =========================
-# SIMPAN ARTIKEL TERAKHIR
+# SIMPAN ARTIKEL TERKIRIM
 # =========================
 
 if response.status_code == 204:
