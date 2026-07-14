@@ -1,29 +1,28 @@
+import os
 import feedparser
+import requests
 
 RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default?alt=rss"
-
-print("=" * 60)
-print("GAMEZ GEMEZ RSS TEST")
-print("=" * 60)
 
 feed = feedparser.parse(RSS_URL)
 
 if not feed.entries:
-    print("❌ RSS tidak memiliki artikel.")
+    print("Tidak ada artikel.")
     exit()
 
 latest = feed.entries[0]
 
-print("Judul:")
-print(latest.title)
+webhook = os.environ["DISCORD_WEBHOOK"]
 
-print()
+message = {
+    "content": f"📰 Artikel baru!\n\n**{latest.title}**\n{latest.link}"
+}
 
-print("Link:")
-print(latest.link)
+response = requests.post(webhook, json=message)
 
-print()
+print("Status Discord:", response.status_code)
 
-print("Jumlah artikel:", len(feed.entries))
-
-print("=" * 60)
+if response.status_code == 204:
+    print("✅ Berhasil mengirim ke Discord!")
+else:
+    print(response.text)
