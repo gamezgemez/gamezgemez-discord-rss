@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
-    # Jalankan setiap 15 menit
+    # Jalankan setiap 5 menit
     - cron: "*/5 * * * *"
 
 permissions:
