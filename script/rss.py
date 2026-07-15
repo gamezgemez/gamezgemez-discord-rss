@@ -34,8 +34,22 @@ if not feed.entries:
     print("Tidak ada artikel.")
     exit()
 
-latest = feed.entries[0]
-latest_link = latest.link
+entries = feed.entries[:10]
+for latest in entries:
+
+    latest_link = latest.link
+
+    if latest_link in sent_links:
+        continue
+
+    ...
+    proses embed
+    ...
+
+    response = requests.post(...)
+
+    if response.status_code == 204:
+        sent_links.add(latest_link)
 
 # =========================
 # DEBUG RSS
@@ -52,17 +66,6 @@ print("=================")
 # =========================
 # CEK DUPLIKAT
 # =========================
-
-if HISTORY_FILE.exists():
-
-   last_sent = HISTORY_FILE.read_text(
-    encoding="utf-8"
-).strip()
-
-else:
-
-    last_sent = ""
-
 
 if HISTORY_FILE.exists():
     sent_links = set(
@@ -200,7 +203,14 @@ elif "gamez gemez" in label_check:
 # BERSIHKAN DESKRIPSI
 # =========================
 
+import os
 import re
+import datetime
+from pathlib import Path
+
+import feedparser
+import requests
+from bs4 import BeautifulSoup
 
 summary_html = latest.get("summary", "")
 
@@ -256,15 +266,12 @@ description = description.strip()
 
 thumbnail = None
 
-
 img = soup.find("img")
 
-
-if img:
-
-    thumbnail = img.get(
-        "src"
-    )
+if img and img.get("src"):
+    thumbnail = img["src"]
+else:
+    thumbnail = brand["icon"]
 
 
 
@@ -405,14 +412,13 @@ if response.status_code == 204:
     print("Berhasil mengirim ke Discord.")
 
     HISTORY_FILE.parent.mkdir(
-        exist_ok=True
-    )
+    exist_ok=True
+)
 
-    sent_links.add(latest_link)
-
-    HISTORY_FILE.write_text(
-        "\n".join(sorted(sent_links)),
-        encoding="utf-8"
+HISTORY_FILE.write_text(
+    "\n".join(sorted(sent_links)),
+    encoding="utf-8"
+)
     )
 
 else:
