@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# Mencegah dua workflow berjalan bersamaan
+concurrency:
+  group: rss-discord
+  cancel-in-progress: false
+
 jobs:
   rss:
     runs-on: ubuntu-latest
