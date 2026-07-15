@@ -45,16 +45,6 @@ print("===== DEBUG =====")
 print("RSS Title :", latest.title)
 print("RSS Link  :", latest.link)
 
-if HISTORY_FILE.exists():
-    print(
-        "Saved Link:",
-        HISTORY_FILE.read_text(
-    encoding="utf-8"
-).strip()
-    )
-else:
-    print("Saved Link: (kosong)")
-
 print("=================")
 
 
@@ -408,35 +398,23 @@ response = requests.post(
     json=payload
 )
 
-
-
-print(
-    "Discord Status:",
-    response.status_code
-)
-
-
+print("Discord Status:", response.status_code)
 
 if response.status_code == 204:
 
-    print(
-        "Berhasil mengirim ke Discord."
+    print("Berhasil mengirim ke Discord.")
+
+    HISTORY_FILE.parent.mkdir(
+        exist_ok=True
     )
-
-
-    HISTORY_FILE.parent.mkdir(...)
-
 
     sent_links.add(latest_link)
 
-HISTORY_FILE.write_text(
-    "\n".join(sent_links),
-    encoding="utf-8"
-)
-
+    HISTORY_FILE.write_text(
+        "\n".join(sorted(sent_links)),
+        encoding="utf-8"
+    )
 
 else:
 
-    print(
-        response.text
-    )
+    print(response.text)
