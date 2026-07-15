@@ -34,22 +34,38 @@ if not feed.entries:
     print("Tidak ada artikel.")
     exit()
 
+# Ambil maksimal 10 artikel terbaru
 entries = feed.entries[:10]
+
+# Muat riwayat artikel yang sudah pernah dikirim
+if HISTORY_FILE.exists():
+    sent_links = set(
+        HISTORY_FILE.read_text(
+            encoding="utf-8"
+        ).splitlines()
+    )
+else:
+    sent_links = set()
+
+print(f"Menemukan {len(entries)} artikel terbaru.")
+print(f"History berisi {len(sent_links)} artikel.\n")
+
+# Proses satu per satu artikel
 for latest in entries:
 
     latest_link = latest.link
 
+    print("===== DEBUG =====")
+    print("RSS Title :", latest.title)
+    print("RSS Link  :", latest_link)
+    print("=================")
+
+    # Lewati jika sudah pernah dikirim
     if latest_link in sent_links:
+        print("Artikel sudah pernah dikirim.\n")
         continue
 
-    ...
-    proses embed
-    ...
-
-    response = requests.post(...)
-
-    if response.status_code == 204:
-        sent_links.add(latest_link)
+    # Mulai proses artikel...
 
 # =========================
 # DEBUG RSS
@@ -58,20 +74,13 @@ for latest in entries:
 print("===== DEBUG =====")
 print("RSS Title :", latest.title)
 print("RSS Link  :", latest.link)
-
+print(
+    "Status    :",
+    "SUDAH DIKIRIM"
+    if latest.link in sent_links
+    else "BELUM DIKIRIM"
+)
 print("=================")
-
-
-
-# =========================
-# CEK DUPLIKAT
-# =========================
-
-if latest_link in sent_links:
-    print("Artikel sudah pernah dikirim.")
-    exit()
-
-
 
 # =========================
 # AMBIL LABEL BLOGGER
@@ -79,177 +88,144 @@ if latest_link in sent_links:
 
 labels = []
 
-
 if hasattr(latest, "tags"):
+    labels = [
+        tag.term.strip()
+        for tag in latest.tags
+        if hasattr(tag, "term") and tag.term.strip()
+    ]
 
-    for tag in latest.tags:
+elif hasattr(latest, "category") and latest.category:
+    labels = [
+        latest.category.strip()
+    ]
 
-        if hasattr(tag, "term"):
+# Hapus label duplikat tetapi tetap mempertahankan urutan
+labels = list(dict.fromkeys(labels))
 
-            labels.append(
-                tag.term.strip()
-            )
+# Jika artikel tidak memiliki label
+if not labels:
+    labels = ["Uncategorized"]
 
-
-# fallback
-
-if hasattr(latest, "category"):
-
-    if latest.category:
-
-        labels.append(
-            latest.category
-        )
-
-
-labels = list(
-    dict.fromkeys(labels)
-)
-
-
-
+# Untuk ditampilkan di Discord
 label_text = " • ".join(
     label.upper()
     for label in labels
 )
 
 
-
 # =========================
 # DETEKSI BRAND BERDASARKAN LABEL
 # =========================
 
-label_check = [
-    x.lower()
-    for x in labels
-]
+label_check = {
+    label.lower().strip()
+    for label in labels
+}
 
-
-
-# Default
-
+# Default: Gamez Gemez
 brand = {
-
     "name": "🎮 GAMEZ GEMEZ",
-
     "icon": GAMEZ_ICON,
-
     "color": 0x5865F2,
-
     "description": (
         "🎮 Gaming Content\n"
         "Review game, berita gaming, "
         "guide, dan informasi terbaru."
     )
-
 }
 
-
-
-# Jika label Gamez Gemez Kiddo ditemukan
-
+# Jika artikel berlabel Gamez Gemez Kiddo
 if "gamez gemez kiddo" in label_check:
 
     brand = {
-
         "name": "🧸 GAMEZ GEMEZ KIDDO",
-
         "icon": KIDDO_ICON,
-
         "color": 0x2ECC71,
-
         "description": (
             "🧸 Family Friendly Content\n"
             "Konten game aman untuk anak "
             "dan keluarga."
         )
-
     }
 
-
-
-# Jika label Gamez Gemez ditemukan
-
+# Jika artikel berlabel Gamez Gemez
 elif "gamez gemez" in label_check:
 
     brand = {
-
         "name": "🎮 GAMEZ GEMEZ",
-
         "icon": GAMEZ_ICON,
-
         "color": 0x5865F2,
-
         "description": (
             "🎮 Gaming Content\n"
             "Review game, berita gaming, "
             "guide, dan informasi terbaru."
         )
-
     }
-
-
 
 # =========================
 # BERSIHKAN DESKRIPSI
 # =========================
 
-import os
 import re
-import datetime
-from pathlib import Path
-
-import feedparser
-import requests
-from bs4 import BeautifulSoup
 
 summary_html = latest.get("summary", "")
 
 soup = BeautifulSoup(summary_html, "html.parser")
 
-# Hapus script/style
+# Hapus tag yang tidak diperlukan
 for tag in soup(["script", "style"]):
     tag.decompose()
 
-# Rapikan teks
+# Ambil seluruh teks dan rapikan spasi
 text = " ".join(
     soup.get_text(separator=" ", strip=True).split()
 )
 
-# Pisahkan menjadi kalimat
+# Pisahkan berdasarkan kalimat
 sentences = re.split(r'(?<=[.!?])\s+', text)
 
-description = ""
+summary_sentences = []
 word_count = 0
 
 for sentence in sentences:
 
     words = sentence.split()
 
-    # Maksimal sekitar 75 kata
+    # Berhenti jika sudah mencapai sekitar 75 kata
     if word_count + len(words) > 75:
         break
 
-    description += sentence + " "
+    summary_sentences.append(sentence)
     word_count += len(words)
 
-description = description.strip()
+# Jika ringkasan terlalu pendek (<50 kata),
+# tambahkan kalimat berikutnya sampai minimal ±50 kata
+if word_count < 50:
 
-# Jika terlalu pendek, tambahkan kalimat berikutnya
-if word_count < 50 and len(sentences) > 0:
+    for sentence in sentences[len(summary_sentences):]:
 
-    for sentence in sentences:
+        summary_sentences.append(sentence)
+        word_count += len(sentence.split())
 
-        if sentence not in description:
+        if word_count >= 50:
+            break
 
-            description += " " + sentence
+description = " ".join(summary_sentences).strip()
 
-            if len(description.split()) >= 50:
-                break
+# Fallback jika RSS tidak memiliki titik sehingga hanya 1 kalimat panjang
+if len(description.split()) > 75:
 
-description = description.strip()
+    words = description.split()[:75]
+    description = " ".join(words)
 
-
+    # Hindari memotong di tengah kata/kalimat
+    if "." in description:
+        description = description.rsplit(".", 1)[0] + "."
+    elif "," in description:
+        description = description.rsplit(",", 1)[0] + "..."
+    else:
+        description += "..."
 
 # =========================
 # THUMBNAIL
@@ -264,25 +240,19 @@ if img and img.get("src"):
 else:
     thumbnail = brand["icon"]
 
-
-
 # =========================
 # TIMESTAMP
 # =========================
 
 timestamp = None
 
-
-published = latest.get(
-    "published_parsed"
-)
-
+published = latest.get("published_parsed")
 
 if published:
-
     timestamp = datetime.datetime(
-        *published[:6]
-    ).isoformat() + "Z"
+        *published[:6],
+        tzinfo=datetime.timezone.utc
+    ).isoformat()
 
 
 
@@ -292,42 +262,32 @@ if published:
 
 embed = {
 
-
-    "title": (
-
-        f"{brand['name']}\n"
-        f"{latest.title}"
-
-    ),
-
+    "title": latest.title,
 
     "url": latest.link,
 
-
     "description": (
 
-    f"{brand['description']}\n\n"
+        f"{brand['description']}\n\n"
 
-    "━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
 
-    f"{description}\n\n"
+        f"{description}\n\n"
 
-    f"📖 **Baca selengkapnya di sini:**\n"
-    f"{latest.link}\n\n"
+        f"📖 **Baca selengkapnya di sini:**\n"
+        f"{latest.link}\n\n"
 
-    "━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
 
-    f"🏷️ **Label Blogger**\n"
-    f"{label_text}\n\n"
+        "🏷️ **Label**\n"
+        f"{label_text}\n\n"
 
-    "✍️ **Author**\n"
-    "Gamez Gemez"
+        "✍️ **Author**\n"
+        "Gamez Gemez"
 
-),
-
+    ),
 
     "color": brand["color"],
-
 
     "author": {
 
@@ -337,12 +297,15 @@ embed = {
 
     },
 
+    "thumbnail": {
+
+        "url": thumbnail
+
+    },
 
     "footer": {
 
-        "text": (
-            "Gamez Gemez Blog Update"
-        ),
+        "text": "Gamez Gemez Blog Update",
 
         "icon_url": brand["icon"]
 
@@ -350,24 +313,9 @@ embed = {
 
 }
 
-
-
-if thumbnail:
-
-    embed["thumbnail"] = {
-
-        "url": thumbnail
-
-    }
-
-
-
 if timestamp:
-
     embed["timestamp"] = timestamp
-
-
-
+    
 # =========================
 # KIRIM DISCORD
 # =========================
