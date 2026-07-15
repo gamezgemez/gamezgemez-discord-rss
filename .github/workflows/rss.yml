@@ -35,14 +35,17 @@ jobs:
         run: |
           python script/rss.py
 
-      - name: Commit latest article
+      - name: Commit History
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add data/latest_post.txt
+          git add data/sent_posts.txt
 
-          if ! git diff --cached --quiet; then
-            git commit -m "Update latest article"
-            git push
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan history."
+            exit 0
           fi
+
+          git commit -m "Update RSS history"
+          git push
