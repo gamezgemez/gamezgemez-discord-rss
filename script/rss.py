@@ -189,32 +189,53 @@ elif "gamez gemez" in label_check:
 # BERSIHKAN DESKRIPSI
 # =========================
 
+import re
+
 summary_html = latest.get("summary", "")
 
 soup = BeautifulSoup(summary_html, "html.parser")
 
-# Hilangkan script/style yang tidak diperlukan
+# Hapus script/style
 for tag in soup(["script", "style"]):
     tag.decompose()
 
-# Ambil teks dan rapikan menjadi satu paragraf
-description = " ".join(
+# Rapikan teks
+text = " ".join(
     soup.get_text(separator=" ", strip=True).split()
 )
 
-# Batas maksimal Discord Embed Description
-MAX_DESCRIPTION = 1024
+# Pisahkan menjadi kalimat
+sentences = re.split(r'(?<=[.!?])\s+', text)
 
-# Potong di akhir kata, bukan di tengah kata
-if len(description) > MAX_DESCRIPTION:
-    description = description[:MAX_DESCRIPTION]
+description = ""
+word_count = 0
 
-    last_space = description.rfind(" ")
+for sentence in sentences:
 
-    if last_space > 0:
-        description = description[:last_space]
+    words = sentence.split()
 
-    description += "..."
+    # Maksimal sekitar 75 kata
+    if word_count + len(words) > 75:
+        break
+
+    description += sentence + " "
+    word_count += len(words)
+
+description = description.strip()
+
+# Jika terlalu pendek, tambahkan kalimat berikutnya
+if word_count < 50 and len(sentences) > 0:
+
+    for sentence in sentences:
+
+        if sentence not in description:
+
+            description += " " + sentence
+
+            if len(description.split()) >= 50:
+                break
+
+description = description.strip()
 
 
 
