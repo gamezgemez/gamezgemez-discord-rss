@@ -4,18 +4,17 @@ on:
   workflow_dispatch:
 
   schedule:
+    # Jalankan setiap 15 menit
     - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
 
 jobs:
   rss:
-
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -23,14 +22,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run RSS Script
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: python script/rss.py
+        run: |
+          python script/rss.py
 
       - name: Commit latest article
         run: |
