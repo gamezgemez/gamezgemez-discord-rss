@@ -297,21 +297,24 @@ embed = {
 
     "description": (
 
-        f"{brand['description']}\n\n"
+    f"{brand['description']}\n\n"
 
-        "━━━━━━━━━━━━━━\n\n"
+    "━━━━━━━━━━━━━━\n\n"
 
-        f"{description}\n\n"
+    f"{description}\n\n"
 
-        "━━━━━━━━━━━━━━\n\n"
+    f"📖 **Baca selengkapnya di sini:**\n"
+    f"{latest.link}\n\n"
 
-        f"🏷️ **Label Blogger**\n"
-        f"{label_text}\n\n"
+    "━━━━━━━━━━━━━━\n\n"
 
-        "✍️ **Author**\n"
-        "Gamez Gemez"
+    f"🏷️ **Label Blogger**\n"
+    f"{label_text}\n\n"
 
-    ),
+    "✍️ **Author**\n"
+    "Gamez Gemez"
+
+),
 
 
     "color": brand["color"],
