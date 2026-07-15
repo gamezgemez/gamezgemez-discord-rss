@@ -45,12 +45,12 @@ print("===== DEBUG =====")
 print("RSS Title :", latest.title)
 print("RSS Link  :", latest.link)
 
-if LATEST_FILE.exists():
+if HISTORY_FILE.exists():
     print(
         "Saved Link:",
-        LATEST_FILE.read_text(
-            encoding="utf-8"
-        ).strip()
+        HISTORY_FILE.read_text(
+    encoding="utf-8"
+).strip()
     )
 else:
     print("Saved Link: (kosong)")
@@ -63,23 +63,28 @@ print("=================")
 # CEK DUPLIKAT
 # =========================
 
-if LATEST_FILE.exists():
+if HISTORY_FILE.exists():
 
-    last_sent = LATEST_FILE.read_text(
-        encoding="utf-8"
-    ).strip()
+   last_sent = HISTORY_FILE.read_text(
+    encoding="utf-8"
+).strip()
 
 else:
 
     last_sent = ""
 
 
-if latest_link == last_sent:
-
-    print(
-        "Artikel sudah pernah dikirim."
+if HISTORY_FILE.exists():
+    sent_links = set(
+        HISTORY_FILE.read_text(
+            encoding="utf-8"
+        ).splitlines()
     )
+else:
+    sent_links = set()
 
+if latest_link in sent_links:
+    print("Artikel sudah pernah dikirim.")
     exit()
 
 
@@ -419,15 +424,15 @@ if response.status_code == 204:
     )
 
 
-    LATEST_FILE.parent.mkdir(
-        exist_ok=True
-    )
+    HISTORY_FILE.parent.mkdir(...)
 
 
-    LATEST_FILE.write_text(
-        latest_link,
-        encoding="utf-8"
-    )
+    sent_links.add(latest_link)
+
+HISTORY_FILE.write_text(
+    "\n".join(sent_links),
+    encoding="utf-8"
+)
 
 
 else:
