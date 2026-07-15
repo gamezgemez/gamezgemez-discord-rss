@@ -30,16 +30,32 @@ KIDDO_ICON = "https://raw.githubusercontent.com/gamezgemez/gamezgemez-discord-rs
 
 feed = feedparser.parse(RSS_URL)
 
-
 if not feed.entries:
-
     print("Tidak ada artikel.")
     exit()
 
-
 latest = feed.entries[0]
-
 latest_link = latest.link
+
+# =========================
+# DEBUG RSS
+# =========================
+
+print("===== DEBUG =====")
+print("RSS Title :", latest.title)
+print("RSS Link  :", latest.link)
+
+if LATEST_FILE.exists():
+    print(
+        "Saved Link:",
+        LATEST_FILE.read_text(
+            encoding="utf-8"
+        ).strip()
+    )
+else:
+    print("Saved Link: (kosong)")
+
+print("=================")
 
 
 
