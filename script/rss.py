@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 
 RSS_URL = "https://gamezgemezofficial.blogspot.com/feeds/posts/default"
 
-LATEST_FILE = Path("data/latest_post.txt")
+HISTORY_FILE = Path("data/sent_posts.txt")
 
 
 # Ganti dengan URL icon asli kamu
