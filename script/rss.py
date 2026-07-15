@@ -103,7 +103,10 @@ labels = list(
 
 
 
-label_text = ", ".join(labels)
+label_text = " • ".join(
+    label.upper()
+    for label in labels
+)
 
 
 
@@ -186,31 +189,32 @@ elif "gamez gemez" in label_check:
 # BERSIHKAN DESKRIPSI
 # =========================
 
-summary_html = latest.get(
-    "summary",
-    ""
+summary_html = latest.get("summary", "")
+
+soup = BeautifulSoup(summary_html, "html.parser")
+
+# Hilangkan script/style yang tidak diperlukan
+for tag in soup(["script", "style"]):
+    tag.decompose()
+
+# Ambil teks dan rapikan menjadi satu paragraf
+description = " ".join(
+    soup.get_text(separator=" ", strip=True).split()
 )
 
+# Batas maksimal Discord Embed Description
+MAX_DESCRIPTION = 1024
 
-soup = BeautifulSoup(
-    summary_html,
-    "html.parser"
-)
+# Potong di akhir kata, bukan di tengah kata
+if len(description) > MAX_DESCRIPTION:
+    description = description[:MAX_DESCRIPTION]
 
+    last_space = description.rfind(" ")
 
-description = soup.get_text(
-    " ",
-    strip=True
-)
+    if last_space > 0:
+        description = description[:last_space]
 
-
-
-if len(description) > 350:
-
-    description = (
-        description[:350]
-        + "..."
-    )
+    description += "..."
 
 
 
