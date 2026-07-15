@@ -67,15 +67,6 @@ print("=================")
 # CEK DUPLIKAT
 # =========================
 
-if HISTORY_FILE.exists():
-    sent_links = set(
-        HISTORY_FILE.read_text(
-            encoding="utf-8"
-        ).splitlines()
-    )
-else:
-    sent_links = set()
-
 if latest_link in sent_links:
     print("Artikel sudah pernah dikirim.")
     exit()
