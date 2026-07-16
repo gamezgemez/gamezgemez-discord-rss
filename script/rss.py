@@ -34,37 +34,60 @@ if not feed.entries:
     print("Tidak ada artikel di RSS Feed.")
     exit()
 
-# Ambil maksimal 10 artikel terbaru
-entries = feed.entries[:10]
+# Ambil seluruh artikel yang tersedia pada RSS
+entries = feed.entries
 
-# Muat riwayat artikel yang sudah pernah dikirim
+# Maksimal artikel yang dikirim setiap workflow
+MAX_SEND = 3
+
+# Counter artikel yang berhasil dikirim
+sent_count = 0
+
+# Muat history artikel yang sudah pernah dikirim
 if HISTORY_FILE.exists():
     sent_links = set(
-        HISTORY_FILE.read_text(encoding="utf-8").splitlines()
+        HISTORY_FILE.read_text(
+            encoding="utf-8"
+        ).splitlines()
     )
 else:
     sent_links = set()
 
-print(f"Menemukan {len(entries)} artikel terbaru.")
-print(f"History berisi {len(sent_links)} artikel.\n")
+print("=" * 60)
+print("GAMEZ GEMEZ RSS DISCORD")
+print("=" * 60)
+print(f"Total artikel RSS      : {len(entries)}")
+print(f"Artikel dalam history  : {len(sent_links)}")
+print(f"Maksimal kirim         : {MAX_SEND} artikel")
+print("=" * 60)
+print()
 
-# Flag untuk mendeteksi apakah ada history baru yang perlu disimpan
+# Menandai apakah history berubah
 history_updated = False
 
-# Proses satu per satu artikel (Semua proses sekarang di dalam Loop)
+# =========================
+# PROSES SELURUH ARTIKEL
+# =========================
+
 for latest in entries:
+
     latest_link = latest.link
 
     print("===== MEMPROSES ARTIKEL =====")
-    print("RSS Title :", latest.title)
-    print("RSS Link  :", latest_link)
+    print("Judul  :", latest.title)
+    print("Link   :", latest_link)
 
-    # Lewati jika sudah pernah dikirim
+    # Jika artikel sudah pernah dikirim
     if latest_link in sent_links:
-        print("Status    : SUDAH DIKIRIM (Skipped)\n")
+        print("Status : SUDAH DIKIRIM (Skip)\n")
         continue
-    else:
-        print("Status    : BELUM DIKIRIM (Processing...)")
+
+    print("Status : BELUM DIKIRIM (Processing...)\n")
+
+    # Seluruh proses berikutnya
+    # (Label, Brand, Deskripsi, Thumbnail,
+    # Timestamp, Embed, Kirim Discord)
+    # tetap menggunakan variabel 'latest'
 
     # =========================
     # AMBIL LABEL BLOGGER
@@ -249,12 +272,21 @@ for latest in entries:
     print("Discord Status:", response.status_code)
 
     if response.status_code == 204:
-        print("Berhasil mengirim ke Discord.\n")
-        # Masukkan ke memori history agar tidak dikirim ulang pada iterasi loop berikutnya
-        sent_links.add(latest_link)
-        history_updated = True
-    else:
-        print(f"Gagal mengirim. Response: {response.text}\n")
+    print("Berhasil mengirim ke Discord.\n")
+
+    # Simpan ke history
+    sent_links.add(latest_link)
+    history_updated = True
+
+    # Tambah jumlah artikel yang berhasil dikirim
+    sent_count += 1
+
+    print(f"Progress: {sent_count}/{MAX_SEND}")
+
+    # Maksimal kirim 3 artikel setiap workflow
+    if sent_count >= MAX_SEND:
+        print(f"\nBatas {MAX_SEND} artikel tercapai.")
+        break
 
 # =========================
 # SIMPAN HISTORY (Di luar loop, setelah semua artikel diproses)
