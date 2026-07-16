@@ -196,8 +196,9 @@ for latest in entries:
             description += "..."
 
     # =========================
-    # GAMBAR UTAMA (LARGE IMAGE DI DESKRIPSI)
+    # GAMBAR UTAMA (LARGE IMAGE)
     # =========================
+    # Mengubah nama variabel thumbnail menjadi main_image untuk kejelasan fungsi
     main_image = None
     img = soup.find("img")
 
@@ -224,9 +225,7 @@ for latest in entries:
     embed = {
         "title": latest.title,
         "url": latest_link,
-        # MODIFIKASI: Menyelipkan kode [​](URL) di paling atas deskripsi agar gambar muncul tepat di bawah judul header
         "description": (
-            f"[​]({main_image})"
             f"{brand['description']}\n\n"
             "━━━━━━━━━━━━━━━━━━━━\n\n"
             f"{description}\n\n"
@@ -242,6 +241,10 @@ for latest in entries:
         "author": {
             "name": brand["name"],
             "icon_url": brand["icon"]
+        },
+        # MODIFIKASI: Mengubah "thumbnail" menjadi "image" agar tampil besar di bawah teks
+        "image": {
+            "url": main_image
         },
         "footer": {
             "text": "Gamez Gemez Blog Update",
