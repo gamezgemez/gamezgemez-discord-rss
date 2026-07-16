@@ -261,17 +261,23 @@ for latest in entries:
         embed["timestamp"] = timestamp
 
     # =========================
-    # KIRIM DISCORD
-    # =========================
-    payload = {
-        "username": brand["name"],
-        "embeds": [embed]
-    }
+# KIRIM DISCORD
+# =========================
 
-    response = requests.post(WEBHOOK_URL, json=payload)
-    print("Discord Status:", response.status_code)
+payload = {
+    "username": brand["name"],
+    "embeds": [embed]
+}
 
-    if response.status_code == 204:
+response = requests.post(
+    WEBHOOK_URL,
+    json=payload,
+    timeout=30
+)
+
+print("Discord Status:", response.status_code)
+
+if response.status_code == 204:
     print("Berhasil mengirim ke Discord.\n")
 
     # Simpan ke history
@@ -288,6 +294,9 @@ for latest in entries:
         print(f"\nBatas {MAX_SEND} artikel tercapai.")
         break
 
+else:
+    print("Gagal mengirim ke Discord.")
+    print(response.text)
 # =========================
 # SIMPAN HISTORY (Di luar loop, setelah semua artikel diproses)
 # =========================
