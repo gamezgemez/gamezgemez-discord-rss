@@ -3,44 +3,41 @@ name: RSS Discord
 on:
   workflow_dispatch:
 
-  schedule:
-    # Jalankan setiap 5 menit
-    - cron: "*/5 * * * *"
-
 permissions:
   contents: write
 
-# Mencegah dua workflow berjalan bersamaan
-concurrency:
-  group: rss-discord
-  cancel-in-progress: false
-
 jobs:
   rss:
+    name: Check Blogger RSS & Send Discord
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Setup Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
 
+      # Install Dependencies
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Jalankan pengecekan RSS Blogger
       - name: Run RSS Script
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           python script/rss.py
 
-      - name: Commit History
+      # Simpan history artikel yang sudah dikirim
+      - name: Commit RSS History
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
