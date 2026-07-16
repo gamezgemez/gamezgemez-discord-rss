@@ -46,9 +46,7 @@ sent_count = 0
 # Muat history artikel yang sudah pernah dikirim
 if HISTORY_FILE.exists():
     sent_links = set(
-        HISTORY_FILE.read_text(
-            encoding="utf-8"
-        ).splitlines()
+        HISTORY_FILE.read_text(encoding="utf-8").splitlines()
     )
 else:
     sent_links = set()
@@ -83,11 +81,6 @@ for latest in entries:
         continue
 
     print("Status : BELUM DIKIRIM (Processing...)\n")
-
-    # Seluruh proses berikutnya
-    # (Label, Brand, Deskripsi, Thumbnail,
-    # Timestamp, Embed, Kirim Discord)
-    # tetap menggunakan variabel 'latest'
 
     # =========================
     # AMBIL LABEL BLOGGER
@@ -261,42 +254,43 @@ for latest in entries:
         embed["timestamp"] = timestamp
 
     # =========================
-# KIRIM DISCORD
-# =========================
+    # KIRIM DISCORD (Sekarang berada di dalam Loop)
+    # =========================
+    payload = {
+        "username": brand["name"],
+        "embeds": [embed]
+    }
 
-payload = {
-    "username": brand["name"],
-    "embeds": [embed]
-}
+    try:
+        response = requests.post(
+            WEBHOOK_URL,
+            json=payload,
+            timeout=30
+        )
+        print("Discord Status:", response.status_code)
 
-response = requests.post(
-    WEBHOOK_URL,
-    json=payload,
-    timeout=30
-)
+        if response.status_code == 204:
+            print("Berhasil mengirim ke Discord.\n")
 
-print("Discord Status:", response.status_code)
+            # Simpan ke history
+            sent_links.add(latest_link)
+            history_updated = True
 
-if response.status_code == 204:
-    print("Berhasil mengirim ke Discord.\n")
+            # Tambah jumlah artikel yang berhasil dikirim
+            sent_count += 1
+            print(f"Progress: {sent_count}/{MAX_SEND}")
 
-    # Simpan ke history
-    sent_links.add(latest_link)
-    history_updated = True
+            # Maksimal kirim 3 artikel setiap workflow
+            if sent_count >= MAX_SEND:
+                print(f"\nBatas {MAX_SEND} artikel tercapai.")
+                break
+        else:
+            print("Gagal mengirim ke Discord.")
+            print(response.text)
+            
+    except requests.exceptions.RequestException as e:
+        print(f"Terjadi error saat mengirim request: {e}")
 
-    # Tambah jumlah artikel yang berhasil dikirim
-    sent_count += 1
-
-    print(f"Progress: {sent_count}/{MAX_SEND}")
-
-    # Maksimal kirim 3 artikel setiap workflow
-    if sent_count >= MAX_SEND:
-        print(f"\nBatas {MAX_SEND} artikel tercapai.")
-        break
-
-else:
-    print("Gagal mengirim ke Discord.")
-    print(response.text)
 # =========================
 # SIMPAN HISTORY (Di luar loop, setelah semua artikel diproses)
 # =========================
