@@ -196,15 +196,16 @@ for latest in entries:
             description += "..."
 
     # =========================
-    # THUMBNAIL
+    # GAMBAR UTAMA (LARGE IMAGE)
     # =========================
-    thumbnail = None
+    # Mengubah nama variabel thumbnail menjadi main_image untuk kejelasan fungsi
+    main_image = None
     img = soup.find("img")
 
     if img and img.get("src"):
-        thumbnail = img["src"]
+        main_image = img["src"]
     else:
-        thumbnail = brand["icon"]
+        main_image = brand["icon"]
 
     # =========================
     # TIMESTAMP
@@ -241,8 +242,9 @@ for latest in entries:
             "name": brand["name"],
             "icon_url": brand["icon"]
         },
-        "thumbnail": {
-            "url": thumbnail
+        # MODIFIKASI: Mengubah "thumbnail" menjadi "image" agar tampil besar di bawah teks
+        "image": {
+            "url": main_image
         },
         "footer": {
             "text": "Gamez Gemez Blog Update",
@@ -254,7 +256,7 @@ for latest in entries:
         embed["timestamp"] = timestamp
 
     # =========================
-    # KIRIM DISCORD (Sekarang berada di dalam Loop)
+    # KIRIM DISCORD
     # =========================
     payload = {
         "username": brand["name"],
